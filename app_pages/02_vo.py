@@ -77,7 +77,7 @@ def wait_for_clone(job_id: str, progress, status_box) -> tuple[bool, str]:
             return True, "\n".join(log)
         if stage == "failed":
             return False, "\n".join(log) + f"\nERROR: {status.get('error', '')}"
-        time.sleep(3)
+        time.sleep(1)
 
 
 def download_clone_results(job_id: str) -> None:

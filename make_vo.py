@@ -94,9 +94,18 @@ def main():
                 print("  retry %d/%d: %s" % (attempt + 1, tries - 1, e))
                 await _aio.sleep(2 * (attempt + 1))
 
+    async def synth_all():
+        # Satu event loop menghindari overhead asyncio.run per kalimat.
+        # Empat request simultan mempercepat naskah panjang tanpa membanjiri TTS.
+        sem = asyncio.Semaphore(4)
+        async def one(i, s):
+            async with sem:
+                await synth(s, tmp / ("seg_%03d.mp3" % i))
+        await asyncio.gather(*(one(i, s) for i, s in enumerate(sentences)))
+
+    asyncio.run(synth_all())
     for i, s in enumerate(sentences):
         piece = tmp / ("seg_%03d.mp3" % i)
-        asyncio.run(synth(s, piece))
         d = ffprobe_dur(piece)
         start, end = t, t + d
         srt_lines.append("%d\n%s --> %s\n%s\n" % (i + 1, sec_to_ts(start),
