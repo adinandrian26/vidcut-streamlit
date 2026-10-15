@@ -1,9 +1,14 @@
 {
   "presets": [
     {
-      "name": "KelontongAI (isi endpoint & model)",
+      "name": "KelontongAI (glm-5.3-flash)",
       "base_url": "https://api.kelontongai.id/v1",
-      "model": ""
+      "model": "glm-5.3-flash"
+    },
+    {
+      "name": "KelontongAI (claude-sonnet-5)",
+      "base_url": "https://api.kelontongai.id/v1",
+      "model": "claude-sonnet-5"
     },
     {
       "name": "Gratisan opencode (isi endpoint & model)",
