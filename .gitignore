@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.streamlit/secrets.toml
+jobs/
+assets/
+*.mp3
+*.mp4
+*.wav
+*.srt
+*.png
+debug_shots/
+shot_*.png
+prompt_*.txt

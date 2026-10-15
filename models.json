@@ -1,0 +1,14 @@
+{
+  "presets": [
+    {
+      "name": "KelontongAI (isi endpoint & model)",
+      "base_url": "https://api.kelontongai.id/v1",
+      "model": ""
+    },
+    {
+      "name": "Gratisan opencode (isi endpoint & model)",
+      "base_url": "https://api.contoh-gratis.com/v1",
+      "model": "isi-nama-model-gratis"
+    }
+  ]
+}
