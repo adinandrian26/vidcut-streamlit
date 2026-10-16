@@ -28,9 +28,13 @@ if not naskah:
 
 try:
     configured_api = st.secrets.get("VC_API_URL", "")
+    configured_key = st.secrets.get("VC_API_KEY", "")
 except Exception:
     configured_api = ""
+    configured_key = ""
 default_api = configured_api or os.environ.get("VC_API_URL", "http://localhost:8520")
+api_key = configured_key or os.environ.get("VC_API_KEY", "")
+api_headers = {"X-API-Key": api_key} if api_key else {}
 with st.expander("Pengaturan layanan clone"):
     clone_api = st.text_input("URL layanan", value=default_api,
                               key="vo_clone_api")
@@ -46,7 +50,8 @@ def api_error(response: requests.Response) -> str:
 
 def get_saved_voices() -> tuple[list[dict], str]:
     try:
-        response = requests.get(f"{clone_api}/api/voices", timeout=5)
+        response = requests.get(f"{clone_api}/api/voices", timeout=5,
+                                headers=api_headers)
         response.raise_for_status()
         return response.json(), ""
     except requests.RequestException as exc:
@@ -58,7 +63,7 @@ def wait_for_clone(job_id: str, progress, status_box) -> tuple[bool, str]:
     while True:
         try:
             response = requests.get(f"{clone_api}/api/jobs/{job_id}",
-                                    timeout=30)
+                                    timeout=30, headers=api_headers)
             if not response.ok:
                 return False, api_error(response)
             status = response.json()
@@ -84,7 +89,8 @@ def download_clone_results(job_id: str) -> None:
     for format_name, destination in (("mp3", vo_mp3), ("srt", vo_srt)):
         response = requests.get(
             f"{clone_api}/api/jobs/{job_id}/audio",
-            params={"format": format_name}, timeout=300)
+            params={"format": format_name}, timeout=300,
+            headers=api_headers)
         if not response.ok:
             raise RuntimeError(api_error(response))
         destination.write_bytes(response.content)
@@ -245,6 +251,7 @@ with st.container(border=True):
                         json={"text": naskah, "language": "id",
                               "consent": True,
                               "voice_id": selected_voice["id"]},
+                        headers=api_headers,
                         timeout=60,
                     )
                 elif upload is not None:
@@ -253,7 +260,8 @@ with st.container(border=True):
                         data={"text": naskah, "language": "id",
                               "consent": "true"},
                         files={"upload": (upload.name, upload.getvalue(),
-                                           upload.type or "application/octet-stream")},
+                                            upload.type or "application/octet-stream")},
+                        headers=api_headers,
                         timeout=120,
                     )
                 else:
@@ -264,6 +272,7 @@ with st.container(border=True):
                               "duration_seconds": sample_seconds,
                               "text": naskah, "language": "id",
                               "consent": True},
+                        headers=api_headers,
                         timeout=60,
                     )
 
@@ -278,7 +287,8 @@ with st.container(border=True):
                 if clone_source == "Buat clone baru" and save_voice:
                     save_response = requests.post(
                         f"{clone_api}/api/jobs/{job_id}/save-voice",
-                        data={"nama": voice_name.strip()}, timeout=30)
+                        data={"nama": voice_name.strip()}, timeout=30,
+                        headers=api_headers)
                     if not save_response.ok:
                         status_box.warning(
                             "Audio berhasil dibuat, tetapi suara tidak tersimpan: "
@@ -296,7 +306,7 @@ with st.container(border=True):
                 if job_id:
                     try:
                         requests.delete(f"{clone_api}/api/jobs/{job_id}",
-                                        timeout=30)
+                                        timeout=30, headers=api_headers)
                     except requests.RequestException:
                         pass
 
